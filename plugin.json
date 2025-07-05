@@ -1,0 +1,20 @@
+{
+  "id": "acode.plugin",
+  "name": "Plugin",
+  "main": "main.js",
+  "version": "1.0.0",
+  "readme": "readme.md",
+  "repository": "",
+  "icon": "icon.png",
+  "files": [],
+  "minVersionCode" : 290,
+  "license": "MIT",
+  "changelogs": "changelogs.md",
+  "keywords": [],
+  "price": 0,
+  "author": {
+    "name": "",
+    "email": "",
+    "github": ""
+  }
+}
