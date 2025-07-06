@@ -1,20 +1,21 @@
 {
-  "id": "acode.plugin",
-  "name": "Plugin",
+  "$schema": "https://acode.app/schema/plugin/v0.1.0.json",
+  "id": "almukaafih.zipfs",
+  "name": "Zip FS",
   "main": "main.js",
   "version": "1.0.0",
   "readme": "readme.md",
   "repository": "",
   "icon": "icon.png",
   "files": [],
-  "minVersionCode" : 290,
+  "minVersionCode": 290,
   "license": "MIT",
   "changelogs": "changelogs.md",
-  "keywords": [],
+  "keywords": ["zip", "fs"],
   "price": 0,
   "author": {
-    "name": "",
-    "email": "",
-    "github": ""
+    "name": "alMukaafih",
+    "email": "almukaafih@gmail.com",
+    "github": "alMukaafih"
   }
 }

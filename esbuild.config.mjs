@@ -1,5 +1,5 @@
+import { exec } from "node:child_process";
 import * as esbuild from "esbuild";
-import { exec } from "child_process";
 
 const isServe = process.argv.includes("--serve");
 
@@ -25,7 +25,7 @@ const zipPlugin = {
 };
 
 // Base build configuration
-let buildConfig = {
+const buildConfig = {
   entryPoints: ["src/main.ts"],
   bundle: true,
   minify: true,
@@ -36,11 +36,12 @@ let buildConfig = {
 };
 
 // Main function to handle both serve and production builds
-(async function () {
+(async () => {
   if (isServe) {
     console.log("Starting development server...");
 
     // Watch and Serve Mode
+    // @ts-ignore
     const ctx = await esbuild.context(buildConfig);
 
     await ctx.watch();
@@ -48,9 +49,9 @@ let buildConfig = {
       servedir: ".",
       port: 3000,
     });
-
   } else {
     console.log("Building for production...");
+    // @ts-ignore
     await esbuild.build(buildConfig);
     console.log("Production build complete.");
   }

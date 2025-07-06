@@ -8,16 +8,21 @@
   "license": "MIT",
   "dependencies": {
     "@acode-app/types": "^1.11.2",
+    "fflate": "^0.8.2",
     "html-tag-js": "^1.8.2"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.0.6",
     "esbuild": "^0.24.2",
+    "jsdom": "^26.1.0",
     "jszip": "^3.10.1",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vitest": "^3.2.4"
   },
   "scripts": {
     "dev": "node esbuild.config.mjs --serve",
-    "build": "tsc --noEmit && node esbuild.config.mjs"
+    "build": "tsc --noEmit && node esbuild.config.mjs",
+    "test": "vitest"
   },
   "browserslist": [
     "> 0.25%, not dead"
