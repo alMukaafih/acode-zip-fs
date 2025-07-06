@@ -1,38 +1,34 @@
 import type { WCPage } from "acode/editor/page";
 import type { FileSystem, FileUrl } from "acode/utils/fileSystem";
 import plugin from "../plugin.json";
+import { createFs, ZipFS } from "./zipFs";
 
 const fs = acode.require("fs") as Fs;
 
 class AcodePlugin {
 	public baseUrl: string | undefined;
 
-	async init(
-		_$page: WCPage,
-		cacheFile: FileSystem,
-		cacheFileUrl: string,
-	): Promise<void> {
-		// Add your initialization code here
-		// fs.extend()
+	test = (url: string) => /zip:\/\//.test(url);
+
+	async init(_$page: WCPage): Promise<void> {
+		const zipFs = new ZipFS();
+		fs.extend(this.test, (url) => createFs(url, zipFs));
 	}
 
 	async destroy() {
-		// Add your cleanup code here
+		fs.remove(this.test);
 	}
 }
 
 if (window.acode) {
 	const acodePlugin = new AcodePlugin();
-	acode.setPluginInit(
-		plugin.id,
-		async (baseUrl: string, $page: WCPage, { cacheFileUrl, cacheFile }) => {
-			if (!baseUrl.endsWith("/")) {
-				baseUrl += "/";
-			}
-			acodePlugin.baseUrl = baseUrl;
-			await acodePlugin.init($page, cacheFile, cacheFileUrl);
-		},
-	);
+	acode.setPluginInit(plugin.id, async (baseUrl: string, $page: WCPage) => {
+		if (!baseUrl.endsWith("/")) {
+			baseUrl += "/";
+		}
+		acodePlugin.baseUrl = baseUrl;
+		await acodePlugin.init($page);
+	});
 	acode.setPluginUnmount(plugin.id, () => {
 		acodePlugin.destroy();
 	});
@@ -48,6 +44,6 @@ interface Fs {
 	(url0: `https:${string}`, ...url: string[]): FileUrl;
 	(...url: string[]): FileSystem;
 
-	extend(test: string, fs: (url: string) => FileSystem): void;
-	remove(test: string): void;
+	extend(test: (url: string) => boolean, fs: (url: string) => FileSystem): void;
+	remove(test: (url: string) => boolean): void;
 }

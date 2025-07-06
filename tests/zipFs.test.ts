@@ -1,6 +1,6 @@
 import { zipSync } from "fflate";
 import { expect, test } from "vitest";
-import { ZipFS } from "./zipFs";
+import { ZipFS } from "../src/zipFs";
 
 // @ts-ignore
 window.acode = {
@@ -11,7 +11,7 @@ window.acode = {
 				return {
 					readFile() {
 						const data = {
-							"file:/test/file.zip": zipSync({
+							"file:///test/file.zip": zipSync({
 								"path/in/zip/test_file.txt": new Uint8Array(
 									new TextEncoder().encode("This is a test file"),
 								),
@@ -38,7 +38,7 @@ const zipFS = new ZipFS();
 
 test("correctly resolves path", () => {
 	zipFS
-		.resolvePath("zip:/test/file.zip/path/in/zip/test_file.txt")
+		.resolvePath("zip:///test/file.zip/path/in/zip/test_file.txt")
 		.then((pathInfo) => {
 			expect(pathInfo.resolved[0]).toBe("/test/file.zip");
 			expect(pathInfo.resolved[1]).toBe("path/in/zip/test_file.txt");
@@ -46,15 +46,17 @@ test("correctly resolves path", () => {
 });
 
 test("resolves file", () => {
-	zipFS.resolve("zip:/test/file.zip/path/in/zip/test_file.txt").then((data) => {
-		expect(new TextDecoder().decode(data as Uint8Array)).toBe(
-			"This is a test file",
-		);
-	});
+	zipFS
+		.resolve("zip:///test/file.zip/path/in/zip/test_file.txt")
+		.then((data) => {
+			expect(new TextDecoder().decode(data as Uint8Array)).toBe(
+				"This is a test file",
+			);
+		});
 });
 
 test("resolves directory", () => {
-	zipFS.resolve("zip:/test/file.zip/path/in/zip/").then((data) => {
+	zipFS.resolve("zip:///test/file.zip/path/in/zip/").then((data) => {
 		const children = data as string[];
 		expect(children).toContain("test_file.txt");
 		expect(children).toContain("hello.txt");

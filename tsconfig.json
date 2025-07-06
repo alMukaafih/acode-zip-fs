@@ -24,6 +24,7 @@
         "./dist/**/*"
     ],
     "include": [
-        "./src"
+        "./src",
+        "tests/zipFs.test.ts"
     ]
 }
