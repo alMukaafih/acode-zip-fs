@@ -1,13 +1,7 @@
-# AcodeTSTemplate
+# Acode ZipFS - a zip file system
 
-This is the typescript version of Acode Plugin template 
+This plugin adds support into Acode to read files directly from zip archives.
 
-Read acode plugin [documentation](https://docs.acode.app/) to develop plugin for acode editor.
+## New protocol: zip:
 
-## Feature
-
-- rich typing for acode and its global api
-- typings for acode.require api like:
-    - dialog boxes
-    - fs api
-    - file browser
+Paths starting with the zip: protocol (e.g. zip:/foo/bar.zip/index.js) will be resolved, the zip archive being extracted and opened as if it was a folder.

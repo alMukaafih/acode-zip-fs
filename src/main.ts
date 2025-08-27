@@ -8,7 +8,7 @@ const fs = acode.require("fs") as Fs;
 class AcodePlugin {
 	public baseUrl: string | undefined;
 
-	test = (url: string) => /zip:\/\//.test(url);
+	test = (url: string) => /^zip:\/\//.test(url);
 
 	async init(_$page: WCPage): Promise<void> {
 		const zipFs = new ZipFS();

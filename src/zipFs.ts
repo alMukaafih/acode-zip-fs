@@ -1,6 +1,7 @@
 import type { File, FileSystem, FS, Stat } from "acode/utils/fileSystem";
 import { unzip as _unzip, zip as _zip, type Unzipped } from "fflate";
 import { basename, dirname, join } from "./path";
+import { ZipFiles } from "./zipFiles";
 
 function unzip(data: Uint8Array): Promise<Unzipped> {
 	return new Promise((resolve, reject) => {
@@ -39,7 +40,8 @@ export class ZipFS {
 	/** resolved paths */
 	paths: Record<string, PathInfo> = {};
 	/** cached zip files */
-	zipFiles: Record<string, Unzipped> = {};
+	zipFiles: Record<string, Unzipped> = ZipFiles();
+	timers: Record<string, number> = {};
 	fs: FS;
 
 	constructor() {
@@ -68,24 +70,24 @@ export class ZipFS {
 			}
 		}
 
-		// 1.   try to read file at path
+		// 1. set isFile = false, try to read file at path, on success set isFile = true
 		// 2. if file is present, try to uncompress it as a zip file
 		// 3. if successfull, cache zip file, then return resolved path i.e [/* path to zip */, /* path in zip file */];
-		// 4. on failure for 2. and 3. if path does not end in ".backup" set path = path + ".backup", then go back to step 1.
+		// 4. on failure for 2. and 3. if isFile is true then we have a regular file, break out of loop.
+		//      if path does not end in ".backup" set path = path + ".backup", then go back to step 1.
 		// 5. get parent of path
 		// 6. if parent exists, set path = parent
-		// 7. if parent does not exists, then we have a regular file, break out of loop;
+		// 7. if parent does not exists, then we have an error;
 		const path0 = path;
+		let isFile: boolean;
 		for (;;) {
+			isFile = false;
 			try {
 				const f = this.fs(`file://${path}`);
 				const buffer = await f.readFile();
+				isFile = true;
 				this.zipFiles[path] = await unzip(new Uint8Array(buffer));
-				// TODO: set time to invalidate cache for zip files in memory and reset counter after each access.
-				/* setTimeout(() => {
-					delete this.zipFiles[path];
-				}, 600_000);
-                clearTimeout(id) */
+
 				const pathInfo: PathInfo = {
 					resolved: [path, path0.replace(new RegExp(`^${path}/`), "")],
 					isFile: false,
@@ -94,6 +96,7 @@ export class ZipFS {
 				this.paths[url] = pathInfo;
 				return pathInfo;
 			} catch (_) {
+				if (isFile) break; // we have a regular file
 				if (!path.endsWith(".backup")) {
 					path = `${path}.backup`;
 					continue;
@@ -104,7 +107,7 @@ export class ZipFS {
 			if (p) {
 				path = p;
 			} else {
-				break;
+				throw new Error(`File does not exist: ${url}`);
 			}
 		}
 
@@ -201,7 +204,7 @@ export class ZipFS {
 		} else if (encoding === "json") {
 			return JSON.parse(decoder.decode(data));
 		} else {
-			return data.buffer;
+			return data.buffer as ArrayBuffer;
 		}
 	}
 
@@ -344,14 +347,18 @@ export class ZipFS {
 				this.saveZip(srcInfo.resolved[0]);
 				this.saveZip(destInfo.resolved[0]);
 			} else {
-				this.createFile(destination, basename(url), srcData.buffer);
+				this.createFile(
+					destination,
+					basename(url),
+					srcData.buffer as ArrayBuffer,
+				);
 				return join(destination, basename(url));
 			}
 		} else {
 			if (typeof srcData === "string") {
 			} else if (Array.isArray(srcData)) {
 			} else {
-				this.writeFile(destination, srcData);
+				this.writeFile(destination, srcData.buffer as ArrayBuffer);
 			}
 		}
 
@@ -422,7 +429,7 @@ export class ZipFS {
 			throw new Error(`Failed to backup zip file: ${path}`);
 		}
 
-		fs.writeFile((await zip(this.zipFiles[path])).buffer);
+		fs.writeFile((await zip(this.zipFiles[path])).buffer as ArrayBuffer);
 	}
 }
 
